@@ -1,0 +1,159 @@
+/* ============================================
+   YouTube Bilingual Subtitles - 字幕样式
+   沉浸式翻译风格
+   ============================================ */
+
+/* 隐藏原始 YouTube 字幕 */
+.caption-window.ytp-caption-window-bottom {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ============ 双语字幕容器 ============ */
+#bisub-container {
+  --bisub-translated-color: #ffffff;
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 85%;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.78);
+  border-radius: 6px;
+  padding: 6px 16px;
+  animation: bisub-fadeIn 0.2s ease-out;
+  font-family: 'YouTube Noto', 'Roboto', 'Noto Sans SC', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+}
+
+@keyframes bisub-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============ 原文（英文在上） ============ */
+#bisub-container .bisub-original {
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.5;
+  padding: 2px 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* ============ 译文（中文在下） ============ */
+#bisub-container .bisub-translated {
+  color: var(--bisub-translated-color);
+  text-align: center;
+  line-height: 1.4;
+  padding: 2px 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* ============ 沉浸式风格（默认） ============ */
+#bisub-container.bisub-immersive .bisub-original {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+#bisub-container.bisub-immersive .bisub-translated {
+  font-weight: 400;
+  font-style: normal;
+  opacity: 0.95;
+}
+
+/* ============ 经典风格 ============ */
+#bisub-container.bisub-classic {
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#bisub-container.bisub-classic .bisub-translated {
+  color: var(--bisub-translated-color);
+}
+
+/* ============ 字体大小 ============ */
+#bisub-container.bisub-size-small .bisub-original {
+  font-size: 14px;
+}
+
+#bisub-container.bisub-size-small .bisub-translated {
+  font-size: 13px;
+}
+
+#bisub-container.bisub-size-medium .bisub-original {
+  font-size: 18px;
+}
+
+#bisub-container.bisub-size-medium .bisub-translated {
+  font-size: 16px;
+}
+
+#bisub-container.bisub-size-large .bisub-original {
+  font-size: 22px;
+}
+
+#bisub-container.bisub-size-large .bisub-translated {
+  font-size: 20px;
+}
+
+/* ============ 加载动画 ============ */
+#bisub-container .bisub-loading {
+  animation: bisub-pulse 1s ease-in-out infinite;
+}
+
+@keyframes bisub-pulse {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ============ 全屏模式适配 ============ */
+.ytp-fullscreen #bisub-container {
+  bottom: 80px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-small .bisub-original {
+  font-size: 18px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-small .bisub-translated {
+  font-size: 16px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-medium .bisub-original {
+  font-size: 24px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-medium .bisub-translated {
+  font-size: 22px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-large .bisub-original {
+  font-size: 30px;
+}
+
+.ytp-fullscreen #bisub-container.bisub-size-large .bisub-translated {
+  font-size: 28px;
+}
