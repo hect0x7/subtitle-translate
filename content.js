@@ -201,12 +201,58 @@
 
     /**
      * 控制原始字幕的显示/隐藏
+     * 通过添加/移除 CSS class 来控制（配合 !important 规则）
      */
     function showOriginalSubtitles(show) {
-        const captionWindow = document.querySelector('.caption-window');
-        if (captionWindow) {
-            captionWindow.style.opacity = show ? '1' : '0';
-        }
+        const captionWindows = document.querySelectorAll('.caption-window');
+        captionWindows.forEach(el => {
+            if (show) {
+                el.classList.remove('bisub-hide-original');
+            } else {
+                el.classList.add('bisub-hide-original');
+            }
+        });
+    }
+
+    // ============ 语言检测 ============
+
+    /**
+     * 检测文本是否已经是目标语言
+     * 根据 CONFIG.targetLang 动态匹配对应语言的 Unicode 字符范围
+     * 对于共用拉丁字母的语言（英/法/德/西等）无法检测，返回 false
+     */
+    function isTargetLanguage(text) {
+        // 各语言对应的独立文字 Unicode 范围
+        const SCRIPT_PATTERNS = {
+            'zh': /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g,  // CJK 汉字
+            'ja': /[\u3040-\u309f\u30a0-\u30ff]/g,                // 平假名 + 片假名
+            'ko': /[\uac00-\ud7af\u1100-\u11ff]/g,                // 韩文
+            'ar': /[\u0600-\u06ff]/g,                              // 阿拉伯文
+            'he': /[\u0590-\u05ff]/g,                              // 希伯来文
+            'th': /[\u0e00-\u0e7f]/g,                              // 泰文
+            'hi': /[\u0900-\u097f]/g,                              // 印地文 (天城文)
+            'ru': /[\u0400-\u04ff]/g,                              // 俄文 (西里尔)
+            'uk': /[\u0400-\u04ff]/g,                              // 乌克兰文 (西里尔)
+            'el': /[\u0370-\u03ff]/g,                              // 希腊文
+        };
+
+        // 取语言代码的基础部分 (如 zh-CN → zh)
+        const langBase = CONFIG.targetLang.toLowerCase().split('-')[0];
+        const pattern = SCRIPT_PATTERNS[langBase];
+
+        // 拉丁字母语言无法通过字符检测，直接跳过
+        if (!pattern) return false;
+
+        // 去除空格、标点和数字后检测
+        const cleaned = text.replace(/[\s\p{P}\d]/gu, '');
+        if (cleaned.length === 0) return false;
+
+        const matches = cleaned.match(pattern);
+        const matchCount = matches ? matches.length : 0;
+        const ratio = matchCount / cleaned.length;
+
+        // 目标语言字符占比 >= 30% 则判定字幕已经是目标语言
+        return ratio >= 0.3;
     }
 
     // ============ 字幕监听 ============
@@ -310,6 +356,16 @@
 
         if (!originalText || originalText === lastOriginalText) return;
         lastOriginalText = originalText;
+
+        // 检测字幕是否已经是目标语言（中文），如果是则跳过翻译
+        if (isTargetLanguage(originalText)) {
+            // 字幕已经是中文，保持原始字幕显示，隐藏翻译容器
+            showOriginalSubtitles(true);
+            isSelfMutation = true;
+            subtitleContainer.style.display = 'none';
+            isSelfMutation = false;
+            return;
+        }
 
         // 隐藏原始字幕（我们会自己显示）
         showOriginalSubtitles(false);

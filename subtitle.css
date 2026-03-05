@@ -3,8 +3,8 @@
    沉浸式翻译风格
    ============================================ */
 
-/* 隐藏原始 YouTube 字幕 */
-.caption-window.ytp-caption-window-bottom {
+/* 隐藏原始 YouTube 字幕（通过 JS 动态添加 class 控制） */
+.bisub-hide-original.caption-window.ytp-caption-window-bottom {
   opacity: 0 !important;
   pointer-events: none !important;
 }
