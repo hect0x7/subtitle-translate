@@ -1,11 +1,9 @@
-/* ============================================
-   YouTube Bilingual Subtitles - 字幕样式
-   沉浸式翻译风格
-   ============================================ */
-
-/* 隐藏原始 YouTube 字幕（通过 JS 动态添加 class 控制） */
-.bisub-hide-original.caption-window.ytp-caption-window-bottom {
+/* 隐藏所有 YouTube 原生字幕窗口 */
+.bisub-hide-original.caption-window,
+.bisub-hide-original .caption-window,
+.bisub-hide-original .ytp-caption-segment {
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
 }
 
@@ -17,7 +15,10 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 99;
-  display: none;
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-out, visibility 0.15s;
   flex-direction: column;
   align-items: center;
   gap: 2px;
@@ -26,21 +27,13 @@
   background: rgba(0, 0, 0, 0.78);
   border-radius: 6px;
   padding: 6px 16px;
-  animation: bisub-fadeIn 0.2s ease-out;
   font-family: 'YouTube Noto', 'Roboto', 'Noto Sans SC', 'PingFang SC',
     'Microsoft YaHei', sans-serif;
 }
 
-@keyframes bisub-fadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+#bisub-container.bisub-active {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ============ 原文（英文在上） ============ */
@@ -112,24 +105,7 @@
   font-size: 20px;
 }
 
-/* ============ 加载动画 ============ */
-#bisub-container .bisub-loading {
-  animation: bisub-pulse 1s ease-in-out infinite;
-}
-
-@keyframes bisub-pulse {
-
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-/* ============ 全屏模式适配 ============ */
+/* ============ 字体大小 ============ */
 .ytp-fullscreen #bisub-container {
   bottom: 80px;
 }

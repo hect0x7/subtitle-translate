@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const value = btn.dataset.value;
         setActiveButton(fontSizeGroup, value);
         await chrome.storage.sync.set({ fontSize: value });
+        previewStyle({ fontSize: value });
     });
 
     // 显示风格
@@ -91,6 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const value = btn.dataset.value;
         setActiveButton(styleGroup, value);
         await chrome.storage.sync.set({ style: value });
+        previewStyle({ style: value });
     });
 
     // 源语言
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setActiveColorSwatch(color);
         customColor.value = color;
         await chrome.storage.sync.set({ translatedColor: color });
+        previewStyle({ translatedColor: color });
     });
 
     // 自定义颜色
@@ -136,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 译文字体
     transFontFamily.addEventListener('change', async () => {
         await chrome.storage.sync.set({ transFontFamily: transFontFamily.value });
+        previewStyle({ transFontFamily: transFontFamily.value });
     });
 
     // 译文字号
@@ -155,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const value = btn.dataset.value;
         setActiveButton(fontWeightGroup, value);
         await chrome.storage.sync.set({ transFontWeight: value });
+        previewStyle({ transFontWeight: value });
     });
 
     // ============ 辅助函数 ============

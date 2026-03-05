@@ -30,7 +30,7 @@
     let lastOriginalText = '';
     let translationInProgress = false;
     let debounceTimer = null;
-    const DEBOUNCE_MS = 30;  // 防抖间隔（越小响应越快）
+    const DEBOUNCE_MS = 100; // 防抖间隔（增加至100ms抵消原生字幕短时闪烁）
     let isSelfMutation = false; // 标记是否是自身触发的 DOM 变更
 
     // ============ 翻译预热缓存 ============
@@ -67,8 +67,10 @@
                 } else {
                     destroy();
                 }
+                // enabled 变更时不需要 applyStyles（init/destroy 会处理）
+                return;
             }
-            // 实时更新样式变量
+            // 实时更新样式变量（仅非 enabled 变更时）
             applyStyles();
         }
     });
@@ -85,9 +87,11 @@
         console.log('[BiSub] YouTube Bilingual Subtitles initializing...');
 
         // 等待 YouTube 播放器加载
-        waitForPlayer().then(() => {
+        waitForPlayer().then((player) => {
             createSubtitleContainer();
             startSubtitleObserver();
+            // 立即隐藏原始字幕（通过在播放器级别添加 class，防止新字幕出现时闪现）
+            showOriginalSubtitles(false);
             // 监听全屏变化，重新应用字体缩放
             document.addEventListener('fullscreenchange', applyStyles);
             isInitialized = true;
@@ -204,14 +208,14 @@
      * 通过添加/移除 CSS class 来控制（配合 !important 规则）
      */
     function showOriginalSubtitles(show) {
-        const captionWindows = document.querySelectorAll('.caption-window');
-        captionWindows.forEach(el => {
-            if (show) {
-                el.classList.remove('bisub-hide-original');
-            } else {
-                el.classList.add('bisub-hide-original');
-            }
-        });
+        const player = document.querySelector('#movie_player');
+        if (!player) return;
+
+        if (show) {
+            player.classList.remove('bisub-hide-original');
+        } else {
+            player.classList.add('bisub-hide-original');
+        }
     }
 
     // ============ 语言检测 ============
@@ -341,9 +345,15 @@
         );
 
         if (captionSegments.length === 0) {
-            // 没有字幕显示时，隐藏我们的容器
+            // 没有字幕显示时，隐藏我们的容器，并清空旧文本防止残影
             isSelfMutation = true;
-            subtitleContainer.style.display = 'none';
+            subtitleContainer.classList.remove('bisub-active');
+            const translatedEl = subtitleContainer.querySelector('.bisub-translated');
+            if (translatedEl) {
+                translatedEl.textContent = '\u00A0'; // 用透明空格占位，防止容器高度跳闪
+                translatedEl.classList.remove('bisub-loading');
+            }
+            lastOriginalText = '';
             isSelfMutation = false;
             return;
         }
@@ -359,22 +369,22 @@
 
         // 检测字幕是否已经是目标语言（中文），如果是则跳过翻译
         if (isTargetLanguage(originalText)) {
-            // 字幕已经是中文，保持原始字幕显示，隐藏翻译容器
+            // 字幕已经是中文，显示原始字幕，隐藏翻译容器
             showOriginalSubtitles(true);
             isSelfMutation = true;
-            subtitleContainer.style.display = 'none';
+            subtitleContainer.classList.remove('bisub-active');
             isSelfMutation = false;
             return;
         }
 
-        // 隐藏原始字幕（我们会自己显示）
+        // 确保原始字幕已隐藏
         showOriginalSubtitles(false);
 
         // 标记自身变更，避免 observer 循环
         isSelfMutation = true;
 
         // 显示我们的容器
-        subtitleContainer.style.display = 'flex';
+        subtitleContainer.classList.add('bisub-active');
 
         // 更新原文
         const originalEl = subtitleContainer.querySelector('.bisub-original');
@@ -405,12 +415,11 @@
             return;
         }
 
-        // 没有缓存 → 保留上次译文，加 loading 指示
+        // 没有缓存 → 保留上次译文，或用全角空格占位维持高度
         isSelfMutation = true;
-        if (!translatedEl.textContent || translatedEl.textContent === '翻译失败') {
+        if (!translatedEl.textContent || translatedEl.textContent.trim() === '' || translatedEl.textContent === '翻译失败') {
             translatedEl.textContent = '...';
         }
-        translatedEl.classList.add('bisub-loading');
         isSelfMutation = false;
 
         try {
